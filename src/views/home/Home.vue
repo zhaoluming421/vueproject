@@ -12,7 +12,9 @@
       <HomeSwiper :banners="banners"/>
       <HomeRecommend :recommends="recommends"/>
       <Feature />
-      <TabControl class="tab_control" :titles="['流行', '新品', '精选']" @tabClick="tabClick"/>
+      <TabControl :titles="['流行', '新品', '精选']" 
+                  @tabClick="tabClick"
+                  ref="tabControl"/>
       <GoodsList :goods="showGoods"/>
     </scroll>
 
@@ -32,6 +34,7 @@
   import BackTop from 'components/content/backTop/BackTop'
 
   import {getHomeMultiData, getHomeGoods} from 'network/home'
+  import {debounce } from 'common/utils.js'
 
   export default {
     components: {
@@ -55,7 +58,8 @@
           'sell': {page: 0, list: []}
         },
         currentType: 'pop',
-        isShowBackTop: false
+        isShowBackTop: false,
+        tabOffsetTop: 0
       };
     },
     watch: {},
@@ -104,6 +108,7 @@
         getHomeGoods(type, page).then(res => {
           this.goods[type].list.push(...res.data.list);
           this.goods[type].page += 1;
+          //方便重复调用上拉加载更多
           this.$refs.scroll.finishPullUp()
         })
       }
@@ -117,7 +122,14 @@
       this.getGoods('sell')
     },
     mounted() {
-      
+      //1.图片加载完成的事件监听
+      const refresh = debounce(this.$refs.scroll.refresh, 50)
+      this.$bus.$on('itemImgLoad', () => {
+        refresh()
+      })
+      //2.获取offset高度
+      this.tabOffsetTop = this.$refs.tabControl.$el.offsetTop;
+      console.log(this.tabOffsetTop);
     }
   };
 </script>
@@ -134,11 +146,6 @@
     left: 0;
     right: 0;
     top: 0;
-    z-index: 9;
-  }
-  .tab_control {
-    position: sticky;
-    top: 44px;
     z-index: 9;
   }
   .content {

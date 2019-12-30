@@ -1,6 +1,6 @@
 <template>
   <div class="goods_item">
-    <img :src="goodsItem.show.img" alt="">
+    <img :src="goodsItem.show.img" alt="" @load="imgLoad">
     <div class="goods_info">
       <p>{{goodsItem.title}}</p>
       <span class="price">{{goodsItem.price}}</span>
@@ -26,7 +26,11 @@
     },
     watch: {},
     computed: {},
-    methods: {},
+    methods: {
+      imgLoad() {
+        this.$bus.$emit('itemImgLoad')
+      }
+    },
     created() {},
     mounted() {}
   };
