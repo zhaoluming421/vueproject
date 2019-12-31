@@ -3,13 +3,18 @@
     <nav-bar class="home_nav">
       <div slot="center">购物街</div>
     </nav-bar>
+    <TabControl :titles="['流行', '新品', '精选']" 
+                  @tabClick="tabClick"
+                  ref="tabControlFixed"
+                  class="tab_control"
+                  v-show="isFixed"/>
 
     <scroll class="content" ref="scroll" 
             :probe-type="3" 
             @scroll="contentScroll"
             :pull-up-load="true"
             @pullingUp="loadMore">
-      <HomeSwiper :banners="banners"/>
+      <HomeSwiper :banners="banners" @swiperLoad="swiperLoad"/>
       <HomeRecommend :recommends="recommends"/>
       <Feature />
       <TabControl :titles="['流行', '新品', '精选']" 
@@ -59,7 +64,9 @@
         },
         currentType: 'pop',
         isShowBackTop: false,
-        tabOffsetTop: 0
+        tabOffsetTop: 0,
+        isFixed: false,
+        saveY: 0
       };
     },
     watch: {},
@@ -84,16 +91,30 @@
             this.currentType = 'sell'
             break
         }
+        this.$refs.tabControlFixed.currentIndex = index;
+        this.$refs.tabControl.currentIndex = index;
       },
+      //返回顶部
       backClick() {
         this.$refs.scroll.scrollTo(0,0,500);
       },
+      //backTop和tabControl的显隐
       contentScroll(position) {
+        //backTop的显隐
         this.isShowBackTop = -(position.y) > 1000
+        //tabControl的显隐
+        this.isFixed = -(position.y) > this.tabOffsetTop
       },
+      //加载更多
       loadMore() {
         this.getGoods(this.currentType)
       },
+      //获取轮播图高度
+      swiperLoad() {
+        //2.获取offset高度
+        this.tabOffsetTop = this.$refs.tabControl.$el.offsetTop;
+      },
+
       /** 
       * 网络请求相关方法
       */
@@ -113,6 +134,16 @@
         })
       }
     },
+    destroyed() {
+      console.log('home destroyed');
+    },
+    activated() {
+      this.$refs.scroll.scrollTo(0, this.saveY, 0)
+      this.$refs.scroll.refresh()
+    },
+    deactivated() {
+      this.saveY = this.$refs.scroll.getScrollY()
+    },
     created() {
       //1.请求多个数据
       this.getMultiData()
@@ -127,9 +158,6 @@
       this.$bus.$on('itemImgLoad', () => {
         refresh()
       })
-      //2.获取offset高度
-      this.tabOffsetTop = this.$refs.tabControl.$el.offsetTop;
-      console.log(this.tabOffsetTop);
     }
   };
 </script>
@@ -155,5 +183,9 @@
     bottom: 49px;
     left: 0;
     right: 0;
+  }
+  .tab_control {
+    position: relative;
+    z-index: 9;
   }
 </style>

@@ -1,9 +1,7 @@
 <template>
-  <swiper>
-    <swiper-item v-for="(item, index) in banners" :key="index">
-      <a :href="item.link">
-        <img :src="item.image" alt="" @load="imageLoad">
-      </a>
+  <swiper class="detail_swiper">
+    <swiper-item v-for="(item, index) in topImages" :key="index">
+      <img :src="item" alt="">
     </swiper-item>
   </swiper>
 </template>
@@ -17,8 +15,8 @@
       SwiperItem
     },
     props: {
-      banners: {
-        tyep: Array,
+      topImages: {
+        type: Array,
         default() {
           return []
         }
@@ -26,22 +24,18 @@
     },
     data() {
       return {
-        isLoad: false
       };
     },
     watch: {},
     computed: {},
-    methods: {
-      imageLoad() {
-        if(!this.isLoad) {
-          this.$emit("swiperLoad");
-        }
-        this.isLoad = true;
-      }
-    },
+    methods: {},
     created() {},
     mounted() {}
   };
 </script>
 <style scoped>
+  .detail_swiper {
+    height: 300px;
+    overflow: hidden;
+  }
 </style>
